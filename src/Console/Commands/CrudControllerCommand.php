@@ -39,16 +39,15 @@ class CrudControllerCommand extends Command
             file_get_contents($this->getStub())
         );
 
-        $appPath = "Http/Controllers/Api/{$name}Controller.php";
+        $appPath = "app/Http/Controllers/Api/{$name}Controller.php";
 
-        $file = app_path($appPath);
+        $file = base_path($appPath);
 
         file_put_contents($file, $template);
 
-        $this->info("Controller [$file] created successfully.");
+        $this->info("\nController [$appPath] created successfully.");
 
         $routePath = base_path("routes/api.php");
-
         $content = file_get_contents($routePath);
         $content .= "\n\nRoute::apiResource('" . Str::of($name)->plural()->snake()->slug();
         $content .= "', App\\Http\\Controllers\\Api\\{$name}Controller::class)";
@@ -56,6 +55,6 @@ class CrudControllerCommand extends Command
 
         file_put_contents($routePath, $content);
 
-        $this->info("Route API was updated successfully . ");
+        $this->info("\nRoute [routes/api.php] updated successfully . ");
     }
 }

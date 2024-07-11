@@ -91,6 +91,8 @@ class PostControllerTest extends TestCase
     {
         $time = now()->format('Y-m-d_H:m:s.u');
         // some related data, attachment with some unique value with time here
+        
+        abort(500, 'Please implement inputBody method');
 
         if (!empty($id)) {
             return [

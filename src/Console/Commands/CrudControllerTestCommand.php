@@ -51,6 +51,6 @@ class CrudControllerTestCommand extends Command
 
         file_put_contents($file, $template);
 
-        $this->info("Controller [$path] created successfully.");
+        $this->info("\nTest Controller [$path] created successfully.");
     }
 }

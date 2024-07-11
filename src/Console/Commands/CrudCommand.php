@@ -31,10 +31,11 @@ class CrudCommand extends Command
         $this->call('make:model', ['name' => $model, '--migration' => true]);
         $this->call('make:request', ['name' => $model . 'Request']);
         $this->call('make:resource', ['name' => $model . 'Resource']);
-        $this->call('crud:controller', ['name' => $model]);
 
         if ($this->option('test')) {
             $this->call('crud:controller-test', ['name' => $model]);
         }
+
+        $this->call('crud:controller', ['name' => $model]);
     }
 }
