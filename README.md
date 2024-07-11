@@ -1,4 +1,4 @@
-# Laravel Crud Trait and Service
+# Laravel Crud Trait and Service for API
 
 ## Install Package via Composer
 
