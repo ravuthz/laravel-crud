@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Crud\CrudController;
+use App\Http\Requests\{{model}}Request;
+use App\Http\Resources\{{model}}Resource;
+use App\Models\{{model}};
+
+class {{model}}Controller extends CrudController
+{
+    protected $model = {{model}}::class;
+    protected $storeRequest = {{model}}Request::class;
+    protected $updateRequest = {{model}}Request::class;
+    protected $resource = {{model}}Resource::class;
+
+    protected function beforeSave($request, $model, $id = null)
+    {
+        // Override this method to add custom logic before saving
+    }
+
+    protected function afterSave($request, $model, $id = null)
+    {
+        // Override this method to add custom logic after saving
+    }
+
+}

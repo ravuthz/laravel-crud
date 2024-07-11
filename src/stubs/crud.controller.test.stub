@@ -1,0 +1,38 @@
+<?php
+
+namespace Tests\Feature\Http\Controllers\Api;
+
+use App\Crud\HasCrudControllerTest;
+use Tests\TestCase;
+
+class {{model}}ControllerTest extends TestCase
+{
+    use HasCrudControllerTest;
+
+    protected static bool $login = true;
+    protected string $route = 'api/{{route}}';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->onceSetUp();
+    }
+
+    protected function inputBody($id = null): array
+    {
+        $time = now()->format('Y-m-d_H:m:s.u');
+        // some related data, attachment with some unique value with time here
+
+        abort(500, 'Please implement inputBody method');
+
+        if (!empty($id)) {
+            return [
+                // payload for test create here
+            ];
+        }
+
+        return [
+            // payload for test update here
+        ];
+    }
+}
