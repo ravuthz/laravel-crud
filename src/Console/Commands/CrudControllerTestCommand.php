@@ -2,10 +2,10 @@
 
 namespace Ravuthz\LaravelCrud\Console\Commands;
 
-use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Ravuthz\LaravelCrud\Crud\Template;
 
-class CrudControllerTestCommand extends Command
+class CrudControllerTestCommand extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -19,7 +19,7 @@ class CrudControllerTestCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Generate a new CRUD controller test.';
+    protected $description = 'Generate a new CRUD controller test only.';
 
     protected function getStub()
     {
@@ -33,24 +33,14 @@ class CrudControllerTestCommand extends Command
     {
         $name = $this->argument('name');
 
-        $template = str_replace(
-            '{{model}}',
-            $name,
-            file_get_contents($this->getStub())
-        );
+        $template = Template::generate($this->getStub(), [
+            '{{model}}' => $name,
+            '{{route}}' => Str::of($name)->plural()->snake()->slug(),
+        ]);
 
-        $template = str_replace(
-            '{{route}}',
-            Str::of($name)->plural()->snake()->slug(),
+        $this->createTemplate('Test Controller',
+            "tests/Feature/Http/Controllers/Api/{$name}ControllerTest.php",
             $template
         );
-
-        $path = "tests/Feature/Http/Controllers/Api/{$name}ControllerTest.php";
-
-        $file = base_path($path);
-
-        file_put_contents($file, $template);
-
-        $this->info("\nTest Controller [$path] created successfully.");
     }
 }

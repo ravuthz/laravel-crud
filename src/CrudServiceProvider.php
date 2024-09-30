@@ -16,7 +16,6 @@ class CrudServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Register any bindings or services here
         $this->app->singleton('command.crud.generate', function () {
             return new CrudCommand();
         });

@@ -2,10 +2,10 @@
 
 namespace Ravuthz\LaravelCrud\Console\Commands;
 
-use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Ravuthz\LaravelCrud\Crud\Template;
 
-class CrudControllerCommand extends Command
+class CrudControllerCommand extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -19,7 +19,7 @@ class CrudControllerCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Generate a new CRUD controller.';
+    protected $description = 'Generate a new CRUD controller only.';
 
     protected function getStub()
     {
@@ -33,28 +33,23 @@ class CrudControllerCommand extends Command
     {
         $name = $this->argument('name');
 
-        $template = str_replace(
-            '{{model}}',
-            $name,
-            file_get_contents($this->getStub())
+        $template = Template::generate($this->getStub(), [
+            '{{model}}' => $name,
+        ]);
+
+        $this->createTemplate('Crud Controller',
+            "app/Http/Controllers/Api/{$name}Controller.php",
+            $template
         );
 
-        $appPath = "app/Http/Controllers/Api/{$name}Controller.php";
+        $routePath = "routes/api.php";
 
-        $file = base_path($appPath);
-
-        file_put_contents($file, $template);
-
-        $this->info("\nController [$appPath] created successfully.");
-
-        $routePath = base_path("routes/api.php");
-        $content = file_get_contents($routePath);
+        $content = file_get_contents(base_path($routePath));
         $content .= "\n\nRoute::apiResource('" . Str::of($name)->plural()->snake()->slug();
         $content .= "', App\\Http\\Controllers\\Api\\{$name}Controller::class)";
         $content .= "\n\t->middleware('auth:api');";
 
-        file_put_contents($routePath, $content);
+        $this->updateTemplate('Route', $routePath, $content);
 
-        $this->info("\nRoute [routes/api.php] updated successfully . ");
     }
 }

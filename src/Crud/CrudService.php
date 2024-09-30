@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CrudService
 {
-    private Model|null $model;
+    private Model|null $model = null;
     private $beforeSaveFn = null;
     private $afterSaveFn = null;
 
@@ -16,9 +16,21 @@ class CrudService
         $this->model = $model ? app($model) : null;
     }
 
-    public function setModel($model): static
+    public function setModel($model): CrudService
     {
         $this->model = app($model);
+        return $this;
+    }
+
+    public function setBeforeSave(callable $callbackFn): CrudService
+    {
+        $this->beforeSaveFn = $callbackFn;
+        return $this;
+    }
+
+    public function setAfterSave(callable $callbackFn): CrudService
+    {
+        $this->afterSaveFn = $callbackFn;
         return $this;
     }
 
@@ -28,9 +40,6 @@ class CrudService
      */
     public function getModel(): Model
     {
-        if (!$this->model) {
-            throw new Exception("The model is required", 400);
-        }
         return $this->model;
     }
 
@@ -70,33 +79,41 @@ class CrudService
      */
     public function save($request, string $id = null)
     {
-        $input = $request->all();
-        $model = $id ? $this->findOne($id) : $this->getModel();
+        return $this->saveFromRequest($request, $id, $this->beforeSaveFn, $this->afterSaveFn);
+    }
 
-        $model->fill($input);
+    public function saveFromRequest($request, string $id = null, $beforeSaveFn = null, $afterSaveFn = null)
+    {
+        $model = $this->fillModel([
+            'id' => $id,
+            ...$request->all()
+        ]);
 
-        if (is_callable($this->beforeSaveFn)) {
-            call_user_func($this->beforeSaveFn, $request, $model, $id);
+        if (is_callable($beforeSaveFn)) {
+            call_user_func($beforeSaveFn, $request, $model, $id);
         }
 
         $model->save();
 
-        if (is_callable($this->afterSaveFn)) {
-            call_user_func($this->afterSaveFn, $request, $model, $id);
+        if (is_callable($afterSaveFn)) {
+            call_user_func($afterSaveFn, $request, $model, $id);
         }
 
         return $model;
     }
 
-    public function setBeforeSave(callable $callbackFn): static
+    public function fillModel(array $input)
     {
-        $this->beforeSaveFn = $callbackFn;
-        return $this;
+        $id = $input['id'] ?? null;
+        $model = $id ? $this->findOne($id) : $this->getModel();
+        $model->fill($input);
+        return $model;
     }
 
-    public function setAfterSave(callable $callbackFn): static
+    public function saveModel($input)
     {
-        $this->afterSaveFn = $callbackFn;
-        return $this;
+        $model = $this->fillModel($input);
+        $model->save();
+        return $model;
     }
 }

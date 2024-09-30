@@ -2,9 +2,11 @@
 
 namespace Ravuthz\LaravelCrud\Console\Commands;
 
-use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Ravuthz\LaravelCrud\Crud\Template;
 
-class CrudCommand extends Command
+class CrudCommand extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -18,24 +20,82 @@ class CrudCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Generate CRUD operations for a given model.';
+    protected $description = 'Generate CRUD resources for a given model.';
 
 
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
-        $model = $this->argument('model');
+        try {
+            $model = $this->argument('model');
 
-        $this->call('make:model', ['name' => $model, '--migration' => true]);
-        $this->call('make:request', ['name' => $model . 'Request']);
-        $this->call('make:resource', ['name' => $model . 'Resource']);
+            $this->newLine();
+            $this->comment("Generating resources for {$model}...");
 
-        if ($this->option('test')) {
-            $this->call('crud:controller-test', ['name' => $model]);
+            $this->createModel($model);
+
+            $this->createRequest($model);
+
+            $this->createResource($model);
+
+            if ($this->option('test')) {
+                $this->call('crud:controller-test', ['name' => $model]);
+            }
+
+            $this->call('crud:controller', ['name' => $model]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            exit(1);
         }
-
-        $this->call('crud:controller', ['name' => $model]);
     }
+
+    private function createModel($model): void
+    {
+        $modelTemplate = Template::generate(
+            __DIR__ . '/../../stubs/crud.model.stub',
+            [
+                '{{ namespace }}' => 'App\Models',
+                '{{ class }}' => $model,
+            ]);
+
+        $this->createTemplate('Model',
+            "app/Models/{$model}.php",
+            $modelTemplate
+        );
+
+        $table = Str::snake(Str::pluralStudly($model));
+
+        $this->call('make:migration', [
+            'name' => "create_{$table}_table",
+            '--create' => $table,
+        ]);
+    }
+
+    private function createRequest($model): void
+    {
+        $class = "{$model}Request";
+        $template = Template::generate(
+            __DIR__ . '/../../stubs/crud.request.stub',
+            [
+                '{{ namespace }}' => 'App\Http\Requests',
+                '{{ class }}' => $class,
+            ]);
+
+        $this->createTemplate('Request', "app/Http/Requests/{$class}.php", $template);
+    }
+
+    private function createResource($model): void
+    {
+        $this->call('make:resource', [
+            'name' => $model . 'Resource',
+        ]);
+
+        $this->call('make:resource', [
+            'name' => $model . 'Collection',
+            '--collection' => true,
+        ]);
+    }
+
 }

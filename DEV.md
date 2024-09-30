@@ -18,3 +18,32 @@ composer validate
 composer update
 
 ```
+
+```json
+// composer.json
+{
+  // ...
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "repositories": {
+    "local": {
+      "type": "path",
+      "url": "packages/ravuthz/laravel-crud",
+      "options": {
+        "symlink": true
+      }
+    }
+  }
+}
+```
+
+```bash
+
+cd project
+mkdir packages
+mkdir packages/ravuthz
+ln -s ~/Projects/laravel/lv11/laravel-crud packages/ravuthz/laravel-crud
+
+composer require "ravuthz/laravel-crud" 
+
+```

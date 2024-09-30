@@ -20,7 +20,7 @@ php artisan crud:generate Post --test
 php artisan crud:controller Post
 
 # Generate only crud controller test
-php artisan crud:controller-test Post --test
+php artisan crud:controller-test Post
 ```
 
 ### Use by follow sample PostController and PostControllerTest
@@ -33,75 +33,67 @@ First create:
 
 Then you can use the following sample code to make it as crud controller and test.
 
-PostController.php
 ```php
+// PostController.php
 <?php
 
 namespace App\Http\Controllers\Api;
 
-use App\Crud\CrudController;
+use App\Models\Post;
 use App\Http\Requests\PostRequest;
 use App\Http\Resources\PostResource;
-use App\Models\Post;
+use App\Http\Resources\PostCollection;
+use Ravuthz\LaravelCrud\CrudController;
 
 class PostController extends CrudController
 {
     protected $model = Post::class;
+    protected $resource = PostResource::class;
+    // protected $collection = PostCollection::class;
     protected $storeRequest = PostRequest::class;
     protected $updateRequest = PostRequest::class;
-    protected $resource = PostResource::class;
 
+    // Override this method to add custom logic before saving
     protected function beforeSave($request, $model, $id = null)
     {
-        // Override this method to add custom logic before saving
+        return $model;
     }
 
+    // Override this method to add custom logic after saving
     protected function afterSave($request, $model, $id = null)
     {
-        // Override this method to add custom logic after saving
+        return $model;
     }
 
 }
 ```
 
-
-PostControllerTest.php
 ```php
+// PostControllerTest.php
 <?php
 
 namespace Tests\Feature\Http\Controllers\Api;
 
-use App\Crud\HasCrudControllerTest;
-use Tests\TestCase;
+use Ravuthz\LaravelCrud\TestCrud;
 
-class PostControllerTest extends TestCase
+class PostControllerTest extends TestCrud
 {
-    use HasCrudControllerTest;
-
-    protected static bool $login = true;
     protected string $route = 'api/posts';
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->onceSetUp();
+        $this->refreshLocalDB(true);
     }
 
-    protected function inputBody($id = null): array
+    protected function requestPayload($id = null): array
     {
-        $time = now()->format('Y-m-d_H:m:s.u');
+        // $time = now()->format('Y-m-d_H:m:s.u');
         // some related data, attachment with some unique value with time here
-        
-        abort(500, 'Please implement inputBody method');
-
-        if (!empty($id)) {
-            return [
-                // payload for test create here
-            ];
-        }
 
         return [
-            // payload for test update here
+            'id' => $id
+            // 'name' => $this->faker->name(),
         ];
     }
 }

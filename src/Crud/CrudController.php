@@ -2,25 +2,28 @@
 
 namespace Ravuthz\LaravelCrud;
 
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 
-class CrudController extends Controller
+abstract class CrudController extends Controller
 {
     protected $model = null;
-    protected $storeRequest = null;
-    protected $updateRequest = null;
     protected $resource = null;
 
     protected $collection = null;
+    protected $storeRequest = null;
+    protected $updateRequest = null;
+
     protected CrudService $service;
 
     public function __construct()
     {
         $this->service = new CrudService($this->model);
         $this->service
-            ->setBeforeSave(fn (...$args) => $this->beforeSave(...$args))
-            ->setAfterSave(fn (...$args) => $this->afterSave(...$args));
+            ->setBeforeSave(fn(...$args) => $this->beforeSave(...$args))
+            ->setAfterSave(fn(...$args) => $this->afterSave(...$args));
     }
 
     protected function beforeSave($request, $model, $id = null)
@@ -33,25 +36,49 @@ class CrudController extends Controller
         return $model;
     }
 
-    protected function responseJson($data, $status = null, $message = null)
+    protected function responseJson($data, $status = null, $message = null, $extra = [])
     {
         $status = $status ?? 200;
         return response()->json([
+            ...$extra,
             'data' => $data ?? [],
             'status' => $status,
-            'message' => $message ?? 'Successfully'
+            'message' => $message ?? 'Successfully',
         ], $status);
     }
 
     protected function responseList($data, $status = null, $message = null)
     {
-        if ($this->collection) {
-            $data = $this->collection::make($data);
+        $extra = [];
+
+        if ($data instanceof Paginator) {
+            $extra['meta'] = [
+                'size' => $data->perPage(),
+                'page' => $data->currentPage(),
+                'total_pages' => $data->lastPage(),
+                'total_items' => $data->total(),
+            ];
         }
+
         if ($this->resource) {
             $data = $this->resource::collection($data);
         }
-        return $this->responseJson($data, $status, $message);
+
+        if ($this->collection) {
+            $data = $this->collection::make($data);
+        }
+
+        if ($data instanceof JsonResource) {
+            $result = $data->response()->getData(true);
+            $extra['meta'] = [
+                'size' => $result['meta']['per_page'],
+                'page' => $result['meta']['current_page'],
+                'total_pages' => $result['meta']['last_page'],
+                'total_items' => $result['meta']['total'],
+            ];
+        }
+
+        return $this->responseJson($data, $status, $message, $extra);
     }
 
     protected function responseItem($data, $status = null, $message = null)
@@ -59,6 +86,7 @@ class CrudController extends Controller
         if ($this->resource) {
             $data = $this->resource::make($data);
         }
+
         return $this->responseJson($data, $status, $message);
     }
 
