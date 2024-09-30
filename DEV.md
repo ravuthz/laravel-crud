@@ -14,6 +14,9 @@ git push origin v1.0.0
 git tag -a v1.0.1 -m "Update Logs and ReadMe"
 git push origin v1.0.1
 
+git tag -a v1.1.0 -m "Update CRUD Resources and CLI"
+git push origin v1.1.0
+
 composer validate
 composer update
 
