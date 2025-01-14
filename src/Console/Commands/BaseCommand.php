@@ -23,6 +23,8 @@ abstract class BaseCommand extends Command
 
     public function createTemplate(string $type, string $path, $template)
     {
+        $this->createDirectory($path);
+
         if (file_exists(base_path($path))) {
             $this->writeError('%s [%s] already exists.', $type, $path);
         }
@@ -33,6 +35,8 @@ abstract class BaseCommand extends Command
 
     public function updateTemplate(string $type, string $path, $template)
     {
+        $this->createDirectory($path);
+
         if (!file_exists(base_path($path))) {
             $this->writeError('%s [%s] not exists.', $type, $path);
         }
@@ -41,4 +45,15 @@ abstract class BaseCommand extends Command
         $this->writeInfo('%s [%s] updated successfully.', $type, $path);
     }
 
+    public function createDirectory($path)
+    {
+        $directory = dirname(base_path($path));
+
+        if (!is_dir($directory)) {
+            if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
+                $this->writeError('Failed to create directory: %s', $directory);
+                return;
+            }
+        }
+    }
 }
