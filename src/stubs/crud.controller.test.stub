@@ -25,7 +25,7 @@ class {{model}}ControllerTest extends TestCrud
         ]);
     }
 
-    protected function requestPayload($id = null): array
+    public function requestPayload($id = null): array
     {
         // $time = now()->format('Y-m-d_H:m:s.u');
         // some related data, attachment with some unique value with time here
