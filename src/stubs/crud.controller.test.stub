@@ -2,16 +2,25 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Passport\Passport;
 use Ravuthz\LaravelCrud\TestCrud;
 
 class {{model}}ControllerTest extends TestCrud
 {
+    use RefreshDatabase;
+
     protected string $route = 'api/{{route}}';
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->refreshLocalDB();
+        Passport::actingAs(User::factory()->create());
+
+        {{model}}::create([
+            'name' => $this->faker->name(),
+            'desc' => $this->faker->sentence(),
+        ]);
     }
 
     protected function requestPayload($id = null): array
@@ -22,6 +31,7 @@ class {{model}}ControllerTest extends TestCrud
         return [
             'id' => $id
             // 'name' => $this->faker->name(),
+            // 'desc' => $this->faker->sentence(),
         ];
     }
 }
