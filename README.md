@@ -75,6 +75,7 @@ class PostController extends CrudController
 namespace Tests\Feature\Http\Controllers\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Passport\Passport;
 use Ravuthz\LaravelCrud\TestCrud;
 
 class PostControllerTest extends TestCrud
