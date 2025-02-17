@@ -23,6 +23,9 @@ git push origin v1.1.1
 git tag -a v1.1.2 -m "Fixed crud test"
 git push origin v1.1.2
 
+git tag -a v1.1.3 -m "Fixed crud test"
+git push origin v1.1.3
+
 composer validate
 composer update
 
