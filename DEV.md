@@ -17,6 +17,12 @@ git push origin v1.0.1
 git tag -a v1.1.0 -m "Update CRUD Resources and CLI"
 git push origin v1.1.0
 
+git tag -a v1.1.1 -m "Fixed missed directory"
+git push origin v1.1.1
+
+git tag -a v1.1.2 -m "Fixed crud test"
+git push origin v1.1.2
+
 composer validate
 composer update
 
@@ -47,6 +53,6 @@ mkdir packages
 mkdir packages/ravuthz
 ln -s ~/Projects/laravel/lv11/laravel-crud packages/ravuthz/laravel-crud
 
-composer require "ravuthz/laravel-crud" 
+composer require "ravuthz/laravel-crud"
 
 ```
