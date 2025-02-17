@@ -74,16 +74,24 @@ class PostController extends CrudController
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Ravuthz\LaravelCrud\TestCrud;
 
 class PostControllerTest extends TestCrud
 {
+    use RefreshDatabase;
+
     protected string $route = 'api/posts';
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->refreshLocalDB(true);
+        Passport::actingAs(User::factory()->create());
+
+        Post::create([
+            'name' => $this->faker->name(),
+            'desc' => $this->faker->sentence(),
+        ]);
     }
 
     protected function requestPayload($id = null): array
@@ -94,6 +102,7 @@ class PostControllerTest extends TestCrud
         return [
             'id' => $id
             // 'name' => $this->faker->name(),
+            // 'desc' => $this->faker->sentence(),
         ];
     }
 }
