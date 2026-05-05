@@ -2,7 +2,7 @@
 
 namespace Ravuthz\LaravelCrud;
 
-use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Routing\Controller;
@@ -52,15 +52,6 @@ abstract class CrudController extends Controller
     {
         $extra = [];
 
-        if ($data instanceof Paginator) {
-            $extra['meta'] = [
-                'size' => $data->perPage(),
-                'page' => $data->currentPage(),
-                'total_pages' => $data->lastPage(),
-                'total_items' => $data->total(),
-            ];
-        }
-
         if ($this->resource) {
             $data = $this->resource::collection($data);
         }
@@ -76,6 +67,15 @@ abstract class CrudController extends Controller
                 'page' => $result['meta']['current_page'],
                 'total_pages' => $result['meta']['last_page'],
                 'total_items' => $result['meta']['total'],
+            ];
+        }
+
+        if ($data instanceof LengthAwarePaginator) {
+            $extra['meta'] = [
+                'size' => $data->perPage(),
+                'page' => $data->currentPage(),
+                'total_pages' => $data->lastPage(),
+                'total_items' => $data->total(),
             ];
         }
 
