@@ -52,24 +52,6 @@ abstract class CrudController extends Controller
     {
         $extra = [];
 
-        if ($this->resource) {
-            $data = $this->resource::collection($data);
-        }
-
-        if ($this->collection) {
-            $data = $this->collection::make($data);
-        }
-
-        if ($data instanceof JsonResource) {
-            $result = $data->response()->getData(true);
-            $extra['meta'] = [
-                'size' => $result['meta']['per_page'],
-                'page' => $result['meta']['current_page'],
-                'total_pages' => $result['meta']['last_page'],
-                'total_items' => $result['meta']['total'],
-            ];
-        }
-
         if ($data instanceof LengthAwarePaginator) {
             $extra['meta'] = [
                 'size' => $data->perPage(),
@@ -77,6 +59,12 @@ abstract class CrudController extends Controller
                 'total_pages' => $data->lastPage(),
                 'total_items' => $data->total(),
             ];
+        }
+
+        if ($this->collection) {
+            $data = $this->collection::make($data);
+        } else if ($this->resource) {
+            $data = $this->resource::collection($data);
         }
 
         return $this->responseJson($data, $status, $message, $extra);
