@@ -3,15 +3,16 @@
 namespace Ravuthz\LaravelCrud;
 
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 abstract class CrudController extends Controller
 {
     protected $model = null;
     protected $resource = null;
-
     protected $collection = null;
     protected $storeRequest = null;
     protected $updateRequest = null;
@@ -39,12 +40,12 @@ abstract class CrudController extends Controller
     protected function responseJson($data, $status = null, $message = null, $extra = [])
     {
         $status = $status ?? 200;
-        return response()->json([
-            ...$extra,
+
+        return new JsonResponse(array_merge($extra, [
             'data' => $data ?? [],
             'status' => $status,
             'message' => $message ?? 'Successfully',
-        ], $status);
+        ]), $status);
     }
 
     protected function responseList($data, $status = null, $message = null)
@@ -113,7 +114,7 @@ abstract class CrudController extends Controller
      */
     public function store(Request $request)
     {
-        $result = $this->service->save(app($this->storeRequest) ?? $request);
+        $result = $this->service->save($this->resolveRequest($this->storeRequest, $request));
         return $this->responseItem($result, 200, 'Created');
     }
 
@@ -122,7 +123,7 @@ abstract class CrudController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $result = $this->service->save(app($this->updateRequest) ?? $request, $id);
+        $result = $this->service->save($this->resolveRequest($this->updateRequest, $request), $id);
         return $this->responseItem($result, 200, 'Updated');
     }
 
@@ -133,5 +134,10 @@ abstract class CrudController extends Controller
     {
         $result = $this->service->delete($id);
         return $this->responseItem($result, 200, 'Deleted');
+    }
+
+    protected function resolveRequest($requestClass, Request $fallback)
+    {
+        return $requestClass ? App::make($requestClass) : $fallback;
     }
 }

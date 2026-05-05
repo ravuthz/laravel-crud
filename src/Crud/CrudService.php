@@ -2,23 +2,27 @@
 
 namespace Ravuthz\LaravelCrud;
 
-use Exception;
+use Illuminate\Support\Facades\App;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
+use LogicException;
 
 class CrudService
 {
-    private Model|null $model = null;
+    private ?Model $model = null;
     private $beforeSaveFn = null;
     private $afterSaveFn = null;
 
     public function __construct($model = null)
     {
-        $this->model = $model ? app($model) : null;
+        if ($model) {
+            $this->setModel($model);
+        }
     }
 
     public function setModel($model): CrudService
     {
-        $this->model = app($model);
+        $this->model = $this->resolveModel($model);
         return $this;
     }
 
@@ -36,15 +40,18 @@ class CrudService
 
     /**
      * @return Model
-     * @throws Exception
      */
     public function getModel(): Model
     {
+        if (!$this->model) {
+            throw new LogicException('CRUD model is not configured.');
+        }
+
         return $this->model;
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function findOne(string $id)
     {
@@ -55,7 +62,7 @@ class CrudService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function findAll($request)
     {
@@ -66,7 +73,7 @@ class CrudService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function delete(string $id)
     {
@@ -75,19 +82,16 @@ class CrudService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
-    public function save($request, string $id = null)
+    public function save($request, ?string $id = null)
     {
         return $this->saveFromRequest($request, $id, $this->beforeSaveFn, $this->afterSaveFn);
     }
 
-    public function saveFromRequest($request, string $id = null, $beforeSaveFn = null, $afterSaveFn = null)
+    public function saveFromRequest($request, ?string $id = null, $beforeSaveFn = null, $afterSaveFn = null)
     {
-        $model = $this->fillModel([
-            'id' => $id,
-            ...$request->all()
-        ]);
+        $model = $this->fillModel(array_merge(['id' => $id], $request->all()));
 
         if (is_callable($beforeSaveFn)) {
             call_user_func($beforeSaveFn, $request, $model, $id);
@@ -115,5 +119,16 @@ class CrudService
         $model = $this->fillModel($input);
         $model->save();
         return $model;
+    }
+
+    private function resolveModel($model): Model
+    {
+        $resolvedModel = $model instanceof Model ? $model : App::make($model);
+
+        if (!$resolvedModel instanceof Model) {
+            throw new InvalidArgumentException('CRUD model must be an Eloquent model instance or class name.');
+        }
+
+        return $resolvedModel;
     }
 }

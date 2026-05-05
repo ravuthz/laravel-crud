@@ -6,17 +6,17 @@ class Template
 {
     public static function generate(string $stub, array $replaces = [])
     {
-        if (!empty($replaces)) {
-            $search = array_keys($replaces);
-            $replace = array_values($replaces);
+        $template = file_get_contents($stub);
 
-            return str_replace(
-                $search,
-                $replace,
-                file_get_contents($stub)
-            );
+        if (empty($replaces)) {
+            return $template;
         }
-        return "";
+
+        return str_replace(
+            array_keys($replaces),
+            array_values($replaces),
+            $template
+        );
     }
 
     public static function write(string $file, string $template)
